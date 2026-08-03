@@ -1,0 +1,34 @@
+{
+  // Paste a screenshot straight into any docs/*.md file (Ctrl+V).
+  // VS Code writes the file into docs/assets/<page-name>/ and inserts the
+  // correct relative Markdown path for you - no manual path typing.
+  "markdown.copyFiles.destination": {
+    "/docs/**/*.md": "assets/${documentBaseName}/${fileName}"
+  },
+  "markdown.copyFiles.overwriteBehavior": "nameIncrementally",
+  "markdown.editor.filePaste.enabled": true,
+  "markdown.editor.filePaste.copyIntoWorkspace": "mediaFiles",
+  "markdown.editor.drop.enabled": true,
+  "markdown.editor.drop.copyIntoWorkspace": "mediaFiles",
+  "markdown.editor.pasteUrlAsFormattedLink.enabled": "smart",
+  "markdown.updateLinksOnFileMove.enabled": "always",
+  "markdown.validate.enabled": true,
+  "markdown.validate.fileLinks.enabled": "warning",
+  "editor.pasteAs.enabled": true,
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
+  "files.associations": {
+    "mkdocs.yml": "yaml"
+  },
+  // mkdocs.yml uses Python object tags that plain YAML schemas do not know about.
+  "yaml.customTags": [
+    "tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg",
+    "tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji",
+    "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format"
+  ],
+  "files.exclude": {
+    "site": true
+  }
+}

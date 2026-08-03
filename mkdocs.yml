@@ -1,0 +1,112 @@
+site_name: Cisco Secure Firewall Enablement Workshop
+site_description: Hands-on dCloud lab guide for Cisco Secure Firewall (FTD / FMC)
+site_author: Ranil Fernando
+site_url: https://ranilf2005.github.io/dcloud_secure_firewall_lab/
+copyright: Copyright &copy; 2025 Cisco
+
+repo_url: https://github.com/ranilf2005/dcloud_secure_firewall_lab
+repo_name: ranilf2005/dcloud_secure_firewall_lab
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  custom_dir: overrides
+  logo: template_assets/cisco_logo.png
+  favicon: template_assets/cisco_logo.png
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.instant
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.integrate
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+extra:
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: fade
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: false
+      auto_caption: false
+      caption_position: top
+      skip_classes:
+        - no-lightbox
+
+markdown_extensions:
+  - md_in_html
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# Add a new page: drop a .md file in docs/ and add one line here.
+nav:
+  - Home: index.md
+  - Lab:
+      - Overview: overview.md
+      - Introduction: introduction.md
+      - 1 - Prepare the Lab Environment: prepare-lab-environment.md
+      - 2 - Lab Tasks: lab-tasks.md
+      - 3 - Automation with FMC: automation-fmc.md
+      - Theory: theory.md
+      - Deep-dive Diagnostics: deep-dive-diagnostics.md
+      - Conclusion: conclusion.md
+  - Topologies: topologies.md
+  - Reference:
+      - Markdown Sample Page: sample-page.md

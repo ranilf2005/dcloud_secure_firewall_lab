@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docs: install dependencies",
+      "type": "shell",
+      "command": "python -m pip install -r requirements.txt",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: live preview",
+      "type": "shell",
+      "command": "python -m mkdocs serve --open",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: build",
+      "type": "shell",
+      "command": "python -m mkdocs build --clean",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Docs: paste screenshot into current page",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/scripts/Paste-Image.ps1",
+        "-Page",
+        "${file}",
+        "-Append"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}

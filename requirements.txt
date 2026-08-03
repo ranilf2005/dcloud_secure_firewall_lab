@@ -1,0 +1,5 @@
+# MkDocs 2.0 removes the plugin and theming systems this site relies on.
+mkdocs>=1.6,<2.0
+mkdocs-material>=9.5,<10
+mkdocs-glightbox>=0.4
+pymdown-extensions>=10.7
