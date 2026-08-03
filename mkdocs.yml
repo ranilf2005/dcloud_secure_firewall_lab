@@ -4,10 +4,6 @@ site_author: Ranil Fernando
 site_url: https://ranilf2005.github.io/dcloud_secure_firewall_lab/
 copyright: Copyright &copy; 2025 Cisco
 
-repo_url: https://github.com/ranilf2005/dcloud_secure_firewall_lab
-repo_name: ranilf2005/dcloud_secure_firewall_lab
-edit_uri: edit/main/docs/
-
 docs_dir: docs
 site_dir: site
 
@@ -26,7 +22,6 @@ theme:
     - search.suggest
     - search.highlight
     - content.code.copy
-    - content.action.edit
     - toc.integrate
   palette:
     # Palette toggle for light mode
