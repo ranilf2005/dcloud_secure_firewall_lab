@@ -5,6 +5,6 @@
 
 # dcloud Lab topologies
 <figure markdown>
-  ![ACI](./assets/topology.png)
+  ![alt text](assets/topologies/image.png)
 </figure>
 
