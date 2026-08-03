@@ -18,6 +18,7 @@ rebuilds the HTML and republishes the site automatically.
 | `docs/assets/` | Screenshots and diagrams |
 | `docs/assets/<page-name>/` | Images pasted into a specific page |
 | `docs/stylesheets/extra.css` | Colour palette and table/grid tweaks |
+| `docs/javascripts/collapsible.js` | Makes every section heading expand/collapse |
 | `docs/template_assets/` | Logos used by the theme and home page |
 | `overrides/home.html` | Home page hero layout |
 | `mkdocs.yml` | Site settings and navigation |
@@ -38,6 +39,20 @@ rebuilds the HTML and republishes the site automatically.
    ```yaml
    - My New Page: my-new-page.md
    ```
+
+## Collapsible sections
+
+Every `##` and `###` heading on the site is clickable and expands or collapses its own content, so
+readers can skip past parts they do not need. Sections are open by default.
+
+To make a section start **closed**, add `{ .collapsed }` to the end of the heading:
+
+```markdown
+### 2a. Troubleshoot from the FTD CLI (optional) { .collapsed }
+```
+
+Links, search hits and table-of-contents entries that point inside a closed section open it
+automatically, and everything is expanded when the page is printed.
 
 ## Adding screenshots
 

@@ -24,3 +24,42 @@
     --md-typeset-a-color: #3a7fff;
     --md-accent-fg-color: #00bdeb;
 }
+
+/* Collapsible sections - see docs/javascripts/collapsible.js */
+.md-typeset .collapsible-heading {
+    cursor: pointer;
+    user-select: none;
+}
+
+.md-typeset .collapsible-heading:hover {
+    color: var(--md-accent-fg-color);
+}
+
+.md-typeset .collapsible-marker {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-right: .45em;
+    border-left: .34em solid currentColor;
+    border-top: .24em solid transparent;
+    border-bottom: .24em solid transparent;
+    vertical-align: middle;
+    opacity: .55;
+    transform: rotate(90deg);
+    transition: transform .15s ease;
+}
+
+.md-typeset .collapsible-heading.is-collapsed .collapsible-marker {
+    transform: rotate(0deg);
+}
+
+.md-typeset .collapsible-body[hidden] {
+    display: none;
+}
+
+@media print {
+    .md-typeset .collapsible-body[hidden] {
+        display: block;
+    }
+}
+

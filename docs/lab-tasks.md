@@ -109,10 +109,10 @@ Task 2 confirms.
 then repeat the same checks from the FMC GUI.
 
 !!! note
-    The CLI section is optional. Every check here can also be done from the FMC web GUI, which is
-    covered in the second half of this task.
+    The CLI section is optional and starts collapsed. Click the heading to open it. Every check
+    there can also be done from the FMC web GUI, which is covered in section 2b.
 
-### 2a. Troubleshoot from the FTD CLI
+### 2a. Troubleshoot from the FTD CLI (optional) { .collapsed }
 
 SSH to the FTD management address `198.18.2.3`. Use the **win11-acme** Windows PC and PuTTY.
 
