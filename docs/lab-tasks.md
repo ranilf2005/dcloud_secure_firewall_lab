@@ -1,100 +1,127 @@
-﻿# Lab Tasks
+# Lab Tasks
 
-End goal of this lab tasks is to make sure LAN-B<br><br>
+## What you are trying to achieve
 
+The ACME Secure Firewall (FTD) sits between the **inside** network `198.18.6.0/24` (LAN-B) and the
+**outside** network `198.18.2.0/24`. Out of the box it is deployed with no Access Control Policy
+(ACP) rules and no NAT rules, so its default action blocks everything.
 
-## Tasks summary 
-Run all those tests to complete this job and understand end-to-end packet troubleshooting and successful test results.<br><br>
+Your goal is to work through the tasks below until the LAN-B Kali PC (`198.18.6.6`) can reach the
+outside network and the internet, and until hosts on the outside network can reach LAN-B. Along the
+way you will learn how to prove **where** a packet is being dropped and **why**, using both the FTD
+CLI and the FMC web GUI.
 
-![ACI](./assets/acmet1.png)<br><br>
+Later tasks then build on that working baseline: an IPS policy, a site-to-site VPN, and a file
+policy.
 
-These are all the test tasks
+## Success criteria
+
+You have completed the core lab when all five of these tests succeed.
+
+![Test topology showing the ACME firewall between LAN-B and the outside network](./assets/acmet1.png)
+
 ```nginx
 INSIDE TO OUTSIDE:
 1. ping from 198.18.6.6 to 198.18.6.2 (ACME FTD inside interface)
-2. ping from 198.18.6.6 to 198.18.2.11 (ACME Kali PC )
+2. ping from 198.18.6.6 to 198.18.2.11 (ACME Kali PC)
 3. ping from 198.18.6.6 to 8.8.8.8
 4. ping from 198.18.6.6 to www.google.com
 
 OUTSIDE TO INSIDE
-5. ping from 198.18.2.11 or 10 to 198.18.6.6
-
+5. ping from 198.18.2.11 or 198.18.2.10 to 198.18.6.6
 ```
 
-If all five of your pings are successful, then you have completed the lab. If not, let's start troubleshooting and go to the next task.<br><br>
+If all five pings succeed, the core lab is done. If any of them fail, start troubleshooting and
+continue with the next task.
+
+## Lab login details
+
+| Device | Address | Username | Password |
+| --- | --- | --- | --- |
+| FMC (ACME site) | `https://198.18.2.2` | `admin` | `dCloud123!` |
+| FMC (other site) | `https://198.18.1.2` | `admin` | `Cisco@123` |
+| Windows 11 | - | `admin` | `C1sco12345` |
+| Kali Linux | - | `kali` | `C1sco12345` |
 
 ## Tips for troubleshooting
 
-â€¢	Check PCâ€™s IP/mask/gateway/Firewall
-â€¢	Check Firewall routing, ACP, NAT<br><br>
+Work from the endpoint outwards. Most failures in this lab are caused by one of these:
 
-(Optional) Write a quick web page to test in Kali â€“ index.html<br><br>
+- **On the PC** - wrong IP address, subnet mask, default gateway, or a local firewall blocking ICMP.
+- **On the firewall** - missing route, missing ACP rule, or missing NAT rule.
 
-![ACI](./assets/2-1.png)<br><br>
+!!! tip "Optional"
+    Host a small `index.html` page on the Kali PC so you have HTTP traffic to test with, not just
+    ICMP. See [Appendix B](#appendix-b-host-a-test-web-server-on-kali-linux).
 
-## Lab Login Details
+![Creating a simple index.html test page on the Kali PC](./assets/2-1.png)
 
-FMC https://198.18.2.2
-username:admin
-PW: dCloud123!
-<br>
-FMC https://198.18.1.2
-username:admin
-PW: Cisco@123
-<br>
-Windows 11:
-admin / C1sco12345
-<br>
-Kali Linux:
-kali / C1sco12345
-<br>
+---
 
-## Task 1
-Please login to both Kali PCs (Green box) hlighted in below diagram for this task.<br>
-Log in to the LAN-B Kali PC, open the terminal, and run the following ping commands to check the connectivity.
+## Task 1 - Test connectivity from the LAN-B Kali PC
 
-![ACI](./assets/topology-acme.png)<br><br>
+**Objective:** establish a baseline. Find out exactly which of the five tests pass and which fail
+before you change anything.
+
+**Steps**
+
+1. Log in to both Kali PCs highlighted in green in the diagram below.
+2. On the **LAN-B Kali PC**, open a terminal.
+3. Run each of the following pings and record the result.
+
+![Lab topology with the two Kali PCs highlighted](./assets/topology-acme.png)
 
 ```nginx
-1. ping 198.18.6.2 (ACME FTD inside interface)2
-2. ping 198.18.2.11 (ACME Kali PC )
+1. ping 198.18.6.2 (ACME FTD inside interface)
+2. ping 198.18.2.11 (ACME Kali PC)
 3. ping 8.8.8.8
 4. ping www.google.com
 ```
-<br><br>
 
-![ACI](./assets/2-2.png)<br><br>
+![Opening a terminal on the LAN-B Kali PC](./assets/2-2.png)
 
-![ACI](./assets/2-3.png)<br><br>
+![Checking the Kali PC IP address, mask and default gateway](./assets/2-3.png)
 
- - A.	ping 198.18.6.2 (ACME FTD inside interface)<br><br>
+**A. `ping 198.18.6.2` (ACME FTD inside interface)** - this one succeeds. The PC can reach its
+default gateway, so the PC addressing and the firewall inside interface are both correct.
 
-![ACI](./assets/2-4.png)<br><br>
+![Successful ping to the FTD inside interface](./assets/2-4.png)
+
+The remaining three tests fail:
 
 ```nginx
-1. ping 198.18.2.11 (ACME Kali PC )
+1. ping 198.18.2.11 (ACME Kali PC)
 2. ping 8.8.8.8
 3. ping google.com
 ```
-<br><br>
 
+![Failed pings to the outside network, the internet and a DNS name](./assets/2-5.png)
 
-![ACI](./assets/2-5.png)<br><br>
+**Expected result:** only the ping to `198.18.6.2` succeeds. Anything that has to cross the
+firewall fails. That tells you the problem is on the firewall, not on the PC - which is what
+Task 2 confirms.
 
+---
 
-## Task 2
+## Task 2 - Find out why the traffic is being dropped
 
-Troubleshoot through FTD CLI<br><br>
-SSH to FTD management IP 198.18.2.3 (Please use win11-acme windows PC to SSH to FTD using putty)<br><br>
-(Pleae note: This is the optional troubleshooting through CLI; you can also do the same troubleshooting using FMC Web GUI)<br><br>
+**Objective:** prove where the packet is dropped and why. You will do this first from the FTD CLI,
+then repeat the same checks from the FMC GUI.
 
-Check routing
+!!! note
+    The CLI section is optional. Every check here can also be done from the FMC web GUI, which is
+    covered in the second half of this task.
 
-![ACI](./assets/2-6.png)
-<br><br>
+### 2a. Troubleshoot from the FTD CLI
 
-Packet-tracer (simulate decision path) FTD CLI:
-Look for where itâ€™s allowed/denied (NAT, Route Lookup, Access-Control, etc.).<br><br>
+SSH to the FTD management address `198.18.2.3`. Use the **win11-acme** Windows PC and PuTTY.
+
+**Check routing** - confirm the firewall has a route towards the destination.
+
+![show route output on the FTD CLI](./assets/2-6.png)
+
+**Run packet-tracer** - this simulates the decision path for a packet without sending real traffic.
+Read it top to bottom and look for the phase that returns `DROP`.
 
 ```graphql
 > packet-tracer input inside icmp 198.18.6.6 8 0 198.18.2.11 detailed 
@@ -165,19 +192,26 @@ Time Taken: 74587 ns
 Drop-reason: (acl-drop) Flow is denied by configured rule, Drop-location: frame 0x00005611d409b518 flow (NA)/NA
 > 
 ```
-<br><br>
 
-Checking asp drop
+!!! success "What this tells you"
+    Routing is fine (Phase 2 found a next hop). The packet is dropped in Phase 4 by the
+    **default action rule** of the access control policy - `deny ip any any`. There is no ACP rule
+    permitting this traffic.
 
-![ACI](./assets/2-7.png)<br><br>
+**Check the accelerated security path drop counters** with `show asp drop`.
 
-Real packet captures (inside & outside) (ASA-style captures on many FTD versions)<br>
-Interpretation: <br>
-- Seen on inside, not on outside â†’ ACP or NAT/routing problem.
-- Seen on outside with translated SRC = 198.18.2.4 â†’ NAT is working; check upstream/return path.
-- Replies seen on outside but not on inside â†’ return blocked (ACP), asymmetric routing, or inspection/state issue.<br><br>
+![show asp drop output](./assets/2-7.png)
 
-![ACI](./assets/2-8.png)<br><br>
+**Take real packet captures** on the inside and outside interfaces. Where the packet appears tells
+you what is wrong:
+
+- Seen on inside, not on outside -> ACP is dropping it, or there is a NAT/routing problem.
+- Seen on outside with a translated source of `198.18.2.4` -> NAT is working; check the upstream
+  device and the return path.
+- Replies seen on outside but not on inside -> the return traffic is blocked by the ACP, or you
+  have asymmetric routing or an inspection/state issue.
+
+![Configuring packet captures on the FTD CLI](./assets/2-8.png)
 
 ```graphql
 capture capIN type raw-data interface inside match ip host 198.18.6.6 any 
@@ -186,26 +220,24 @@ capture capIN type raw-data interface inside match ip host 198.18.6.6 any
 any  any4 any6 host 
 > capture capOUT type raw-data interface outside match ip any any 
 ```
-<br><br>
 
-![ACI](./assets/2-9.png)<br><br>
+![Capture running on the inside interface](./assets/2-9.png)
 
-![ACI](./assets/2-10.png)<br><br>
+![Capture running on the outside interface](./assets/2-10.png)
 
-![ACI](./assets/2-11.png)<br><br>
+![Reviewing the captured packets](./assets/2-11.png)
 
-![ACI](./assets/2-12.png)<br><br>
+![Comparing the inside and outside captures](./assets/2-12.png)
 
-Connection/Xlate tables<br>
-Expect a translated (xlated) entry and an active connection when traffic flows.<br><br>
+**Check the connection and translation tables.** When traffic is flowing correctly you should see
+an active connection and a translated (xlate) entry.
 
 ```nginx
 show conn address 198.18.6.6
 show xlate | include 198.18.6.6
 ```
-<br><br>
 
-Quick command crib (FTD CLI)<br><br>
+**Quick command crib (FTD CLI)**
 
 ```graphql
 show interface ip brief
@@ -223,64 +255,65 @@ no capture capIN
 no capture capOUT
 show asp drop
 ```
-<br><br>
 
-Checking the default ACP action, ACP and NAT<br>
-Please note:<br>
- - Deaful ACP action id â€œBlockâ€<br>
- - Please make sure to check the Defualy ACP Action log configuration
- - No ACP rules configured<br>
- - No NAT rules configured<br>
+### 2b. Troubleshoot from the FMC GUI
 
+Check the access control policy and NAT configuration. In this lab you should find that:
 
-![ACI](./assets/2-13.png)<br><br>
+- The default ACP action is **Block**.
+- Logging is **not** enabled on the default action - so nothing is written to the event viewer.
+- No ACP rules are configured.
+- No NAT rules are configured.
 
-Check what are the default actions<br><br>
+![Access control policy with no rules configured](./assets/2-13.png)
 
-![ACI](./assets/2-14.png)<br><br>
+Confirm the default action and its logging setting.
 
-Checking connection events<br>
+![Default action set to Block](./assets/2-14.png)
 
-![ACI](./assets/2-15.png)<br><br>
+!!! warning
+    Enable logging on the default action before you go any further. Without it, blocked traffic
+    never appears in the connection events and you will be troubleshooting blind.
 
-![ACI](./assets/2-16.png)<br><br>
+**Check the connection events.**
 
-![ACI](./assets/2-17.png)<br><br>
+![Opening the connection events viewer](./assets/2-15.png)
 
-![ACI](./assets/2-18.png)<br><br>
+![Connection events list](./assets/2-16.png)
 
-![ACI](./assets/2-19.png)<br><br>
+![Filtering the connection events](./assets/2-17.png)
 
+![Connection event detail showing the block](./assets/2-18.png)
 
-Enable ACP rules analysis<br><br>
+![Connection events for the test traffic](./assets/2-19.png)
 
-![ACI](./assets/2-20.png)<br><br>
+**Enable ACP rule analysis.**
 
-![ACI](./assets/2-21.png)<br><br>
+![Enabling rule analysis on the access control policy](./assets/2-20.png)
 
-Enable or disable event columns.<br>
-Click the X to mark any of the fields.<br><br>
+![Rule analysis results](./assets/2-21.png)
 
-![ACI](./assets/2-22.png)<br><br>
+**Show or hide event columns.** Click the **X** to remove a field from the table.
 
-![ACI](./assets/2-23.png)<br><br>
+![Choosing which event columns to display](./assets/2-22.png)
 
-Advance search<br><br>
+![Event table with the selected columns](./assets/2-23.png)
 
-![ACI](./assets/2-24.png)<br><br>
+**Advanced search** lets you narrow the events down to the flow you care about.
 
-Packet Tracer using GUI<br><br>
+![Advanced search in the event viewer](./assets/2-24.png)
 
-![ACI](./assets/2-25.png)<br><br>
+**Run packet-tracer from the GUI** - the same simulation as the CLI, without leaving FMC.
 
-![ACI](./assets/2-26.png)<br><br>
+![Opening packet tracer in FMC](./assets/2-25.png)
 
-![ACI](./assets/2-27.png)<br><br>
+![Entering the packet tracer parameters](./assets/2-26.png)
 
-Check the issue regarding packet drops and their reasons.<br><br>
+![Packet tracer result in FMC](./assets/2-27.png)
 
-![ACI](./assets/2-28.png)<br><br>
+Review the drop and its reason.
 
+![Packet tracer showing the drop phase and reason](./assets/2-28.png)
 
 ```graphql
 Interface: GigabitEthernet0/1
@@ -358,147 +391,162 @@ Output Interface: outside(vrfid:0)
 Action: drop
 Input Interface: inside(vrfid:0)
 ```
-<br><br>
 
-Packet Capture using GUI<br><br>
+**Run a packet capture from the GUI.**
 
-![ACI](./assets/2-29.png)<br><br>
+![Configuring a packet capture in FMC](./assets/2-29.png)
 
-Save packet capture and analyses through Wireshark.<br><br>
+Save the capture file and analyse it in Wireshark.
 
-![ACI](./assets/2-30.png)<br><br>
+![Downloading the capture file](./assets/2-30.png)
 
-![ACI](./assets/2-31.png)<br><br>
+![Opening the capture in Wireshark](./assets/2-31.png)
 
-![ACI](./assets/2-32.png)<br><br>
+![Wireshark showing the echo requests](./assets/2-32.png)
 
-![ACI](./assets/2-33.png)<br><br>
+![Wireshark showing no replies returning](./assets/2-33.png)
 
+**Expected result:** you can state, with evidence, that the traffic is dropped by the ACP default
+action and that no NAT rule exists for the inside network.
 
-## Task 3
-Allow traffic from inside 198.18.6.6 to outside 8.8.8.8<br><br>
+---
 
-Check Secure Firewall configuration<br>
-Login to FMC https://198.18.2.2 (admin / dCloud123!)<br>
- - Check the Interface IPs, Routing, and zones
- - Check required ACP and NAT policies<br><br>
+## Task 3 - Allow traffic from inside `198.18.6.6` to outside `8.8.8.8`
 
-Policies > Access control<br><br>
-![ACI](./assets/2-34.png)<br><br>
+**Objective:** create the ACP and NAT rules that let LAN-B reach the outside network and the
+internet, then prove the change worked.
 
-Device > NAT<br><br>
+**Steps**
 
-![ACI](./assets/2-35.png)<br><br>
+1. Log in to FMC at `https://198.18.2.2` (`admin` / `dCloud123!`).
+2. Check the interface IP addresses, routing and security zones.
+3. Create the required ACP rule and NAT rule.
 
-Once you have completed your Firewall configuration, make sure to Save and deploy it.<br>
-(select the Ignore warning for this lab)<br><br>
+Go to **Policies > Access Control** and add a rule permitting inside to outside.
 
-![ACI](./assets/2-36.png)<br><br>
+![Adding an access control rule for inside to outside traffic](./assets/2-34.png)
 
-![ACI](./assets/2-37.png)<br><br>
+Go to **Devices > NAT** and add the translation for the inside network.
 
+![Adding the NAT rule for the inside network](./assets/2-35.png)
 
-Check the packet captures again to see the results<br><br>
+!!! warning "Save and deploy"
+    Configuration changes do nothing until they are deployed to the device. Save your changes, then
+    deploy. For this lab you can select **Ignore warning**.
 
-![ACI](./assets/2-38.png)<br><br>
+![Saving the configuration](./assets/2-36.png)
 
-![ACI](./assets/2-39.png)<br><br>
+![Deploying the changes to the FTD](./assets/2-37.png)
 
-Very important to stop the captures once you finish troubleshooting<br><br>
+Check the packet captures again to see the difference.
 
-![ACI](./assets/2-40.png)<br><br>
+![Capture showing traffic now leaving the outside interface](./assets/2-38.png)
 
-![ACI](./assets/2-41.png)<br><br>
+![Capture showing the replies returning](./assets/2-39.png)
 
-Re-run the test and check the results<br><br>
+!!! danger "Always stop your captures"
+    Captures consume memory and CPU on the firewall. Remove them as soon as you have finished
+    troubleshooting.
 
-![ACI](./assets/2-42.png)<br><br>
+![Stopping the packet capture](./assets/2-40.png)
 
+![Confirming the capture has been removed](./assets/2-41.png)
 
-## Task 4
-Allow traffic from outside 198.18.2.x to inside 198.18.6.x<br>
-(by default both PCâ€™S cannot ping/connect to the 198.18.6.x network)<br><br>
+Re-run the tests from the LAN-B Kali PC.
 
-Check Kali PC IP/Mask/Gateway/routing and ping test<br><br>
+![Successful pings to the outside network and the internet](./assets/2-42.png)
 
-![ACI](./assets/2-43.png)<br><br>
+**Expected result:** tests 1 to 4 from the success criteria now pass.
 
-![ACI](./assets/2-44.png)<br><br>
+---
 
-Check Windows PC IP/Mask/Gateway/routing and ping test<br><br>
+## Task 4 - Allow traffic from outside `198.18.2.x` to inside `198.18.6.x`
 
-![ACI](./assets/2-45.png)<br><br>
+**Objective:** allow the return direction. By default neither the Kali PC nor the Windows PC on the
+outside network can ping or connect to the `198.18.6.0/24` network.
 
-![ACI](./assets/2-46.png)<br><br>
+**Steps**
 
-Configure ACP and NAT rules to allow those traffic<br><br>
+1. On the outside **Kali PC**, check the IP address, mask, gateway and routing, then ping
+   `198.18.6.6`.
 
-![ACI](./assets/2-47.png)<br><br>
+![Checking the outside Kali PC network settings](./assets/2-43.png)
 
-![ACI](./assets/2-48.png)<br><br>
+![Failed ping from the outside Kali PC to LAN-B](./assets/2-44.png)
 
-Then re-run tests again<br><br>
+2. On the outside **Windows PC**, do the same checks and the same ping.
 
-![ACI](./assets/2-49.png)<br><br>
+![Checking the Windows PC network settings](./assets/2-45.png)
 
-![ACI](./assets/2-50.png)<br><br>
+![Failed ping from the Windows PC to LAN-B](./assets/2-46.png)
 
+3. Configure the ACP and NAT rules needed to allow this traffic.
 
-## Task 5
-IPS Policy creating and testing<br><br>
-In this scenario will create IPS rule to block icmp traffic<br><br>
-To test the policy, please generate traffic between inside and outside interfaces<br><br>
+![Access control rule for outside to inside traffic](./assets/2-47.png)
 
-![ACI](./assets/2-51.png)<br><br>
+![NAT rule for outside to inside traffic](./assets/2-48.png)
 
-![ACI](./assets/2-52.png)<br><br>
+4. Deploy the changes and run the tests again.
 
-![ACI](./assets/2-53.png)<br><br>
+![Successful ping from the outside Kali PC to LAN-B](./assets/2-49.png)
 
-![ACI](./assets/2-54.png)<br><br>
+![Successful ping from the Windows PC to LAN-B](./assets/2-50.png)
 
-![ACI](./assets/2-55.png)<br><br>
+**Expected result:** test 5 from the success criteria now passes. The core lab is complete.
 
-![ACI](./assets/2-56.png)<br><br>
+---
 
-![ACI](./assets/2-57.png)<br><br>
+## Task 5 - Create and test an IPS policy
 
-![ACI](./assets/2-58.png)<br><br>
+**Objective:** build an intrusion policy that blocks ICMP, attach it to an ACP rule, and confirm
+from the events that it is taking effect.
 
+**Steps**
 
+1. Create an intrusion policy and add a rule that blocks ICMP traffic.
 
-Apply IPS policy to ACP rule<br><br>
+![Creating a new intrusion policy](./assets/2-51.png)
 
-![ACI](./assets/2-59.png)<br><br>
+![Naming the intrusion policy](./assets/2-52.png)
 
-Deploy the changes<br><br>
+![Opening the rule set](./assets/2-53.png)
 
-Check the events (under connection events or unified events)<br><br>
+![Searching for the ICMP rules](./assets/2-54.png)
 
-![ACI](./assets/2-60.png)<br><br>
+![Selecting the ICMP rule](./assets/2-55.png)
 
-![ACI](./assets/2-61.png)<br><br>
+![Setting the rule state to block](./assets/2-56.png)
 
-![ACI](./assets/2-62.png)<br><br>
+![Saving the rule state change](./assets/2-57.png)
 
+![Intrusion policy ready to be applied](./assets/2-58.png)
 
-## Task 6
-Your task is to configure a site-to-site VPN between the two sites (details below). Finally, to verify the success of this task, you should be able to establish connectivity (ping) between 198.18.5.0/24 and 198.18.6.0/24. If not, please start troubleshooting.
-<br>
+2. Apply the intrusion policy to an ACP rule.
 
-FMC https://198.18.1.2
-username:admin
-PW: Cisco@123
-<br>
-Windows 11:
-admin / C1sco12345
-<br>
-Kali Linux:
-kali / C1sco12345
-<br>
+![Attaching the intrusion policy to an access control rule](./assets/2-59.png)
 
-Site to Site VPN Diagram and details
-<br>
+3. Deploy the changes.
+4. Generate ICMP traffic between the inside and outside interfaces.
+5. Check the events under **Connection Events** or **Unified Events**.
+
+![Intrusion events generated by the test traffic](./assets/2-60.png)
+
+![Event detail showing the matched intrusion rule](./assets/2-61.png)
+
+![Unified events view](./assets/2-62.png)
+
+**Expected result:** the pings that worked in Task 3 are now blocked, and each block is visible as
+an intrusion event.
+
+---
+
+## Task 6 - Build a site-to-site VPN between the two sites
+
+**Objective:** configure an IPsec site-to-site VPN so that `198.18.5.0/24` and `198.18.6.0/24` can
+reach each other. You must configure **both** ends before the tunnel comes up.
+
+**Site details**
+
 ```nginx
 1. OUTSIDE
    Firepower FTD = 198.18.1.4
@@ -508,162 +556,174 @@ Site to Site VPN Diagram and details
    Firepower FTD = 198.18.2.4
    Encrypted traffic = 198.18.6.0/24
 ```
-<br>
 
-![ACI](./assets/v42.png)
-<br><br>
+| Device | Address | Username | Password |
+| --- | --- | --- | --- |
+| FMC (other site) | `https://198.18.1.2` | `admin` | `Cisco@123` |
+| Windows 11 | - | `admin` | `C1sco12345` |
+| Kali Linux | - | `kali` | `C1sco12345` |
 
-These are all the test tasks
+![Site-to-site VPN topology](./assets/v42.png)
+
+**Success criteria for this task**
+
 ```nginx
 1. ping from 198.18.6.6 to 198.18.5.6
 2. ping from 198.18.5.6 to 198.18.6.6
 ```
-<br><br>
 
-Create site to site VPN in FMC 198.18.2.2<br><br>
+### 6a. Configure the ACME end (FMC `198.18.2.2`)
 
-![ACI](./assets/v6.png)<br>
+![Starting the site-to-site VPN wizard](./assets/v6.png)
 
-![ACI](./assets/v7.png)<br>
+![Naming the VPN topology](./assets/v7.png)
 
-![ACI](./assets/v8.png)<br>
+![Selecting the node devices](./assets/v8.png)
 
-![ACI](./assets/v9.png)<br>
+![Configuring the local node and protected networks](./assets/v9.png)
 
-![ACI](./assets/v10.png)<br>
+![Configuring the remote peer](./assets/v10.png)
 
-![ACI](./assets/v11.png)<br>
+![IKE settings](./assets/v11.png)
 
-![ACI](./assets/v12.png)<br>
+![IPsec settings](./assets/v12.png)
 
-![ACI](./assets/v13.png)<br>
+![Advanced settings](./assets/v13.png)
 
-![ACI](./assets/v14.png)<br>
-<br><br>
+![Reviewing the completed VPN topology](./assets/v14.png)
 
-Site to Site VPN Unknow Status<br>
-![ACI](./assets/v1.png)
-<br><br>
+The tunnel status shows as **Unknown** at this point, because the remote end is not configured yet.
 
-ACP Rule (allow all)<br>
+![Site-to-site VPN showing Unknown status](./assets/v1.png)
 
-![ACI](./assets/v2.png)
-<br><br>
+Add an ACP rule that permits the VPN traffic.
 
-NAT Rules<br>
-![ACI](./assets/v3.png)
-<br><br>
+![Access control rule allowing the VPN traffic](./assets/v2.png)
 
-Site to Site VPN Active Status<br>
-(Please note: VPN shows as active once you configure the remote site only)<br>
+Add the NAT rules, including a NAT exemption so the VPN traffic is not translated.
 
-![ACI](./assets/v4.png)
-<br>
-![ACI](./assets/v5.png)
-<br><br>
+![NAT rules including the NAT exemption for VPN traffic](./assets/v3.png)
 
-Testting from Kali PC
-![ACI](./assets/v15.png)
-<br><br>
+!!! note
+    The VPN only shows as **Active** once the remote site has been configured as well.
 
-Check STS VPN status through FTD CLI (198.18.2.3)
-![ACI](./assets/v16.png)<br>
+![Site-to-site VPN showing Active status](./assets/v4.png)
 
-![ACI](./assets/v17.png)<br>
+![Tunnel details](./assets/v5.png)
 
-![ACI](./assets/v18.png)<br>
-<br><br>
+Test from the Kali PC.
 
-Check STS VPN status through FMC
-![ACI](./assets/v19.png)
-<br><br>
+![Successful ping across the VPN from the Kali PC](./assets/v15.png)
 
+Verify the tunnel from the FTD CLI (`198.18.2.3`).
 
+![show crypto ikev2 sa output](./assets/v16.png)
 
-Create site to site VPN in FMC 198.18.1.2<br><br>
+![show crypto ipsec sa output](./assets/v17.png)
 
-Site to Site VPN Unknow Status<br>
+![show vpn-sessiondb detail l2l output](./assets/v18.png)
 
-![ACI](./assets/v20.png)<br>
+Verify the tunnel from FMC.
 
-![ACI](./assets/v21.png)<br>
+![VPN status in the FMC monitoring dashboard](./assets/v19.png)
 
-![ACI](./assets/v22.png)<br>
+### 6b. Configure the other end (FMC `198.18.1.2`)
 
-![ACI](./assets/v23.png)<br>
+Repeat the same configuration on the second FMC. Until it is deployed, this end also shows an
+**Unknown** status.
 
-![ACI](./assets/v24.png)<br>
-<br><br>
+![Starting the VPN wizard on the second FMC](./assets/v20.png)
 
-Testting from Kali PC
-![ACI](./assets/v25.png)<br>
-<br><br>
+![Configuring the local node on the second FMC](./assets/v21.png)
 
-Check STS VPN status through FTD CLI (198.18.1.3)
-![ACI](./assets/v26.png)<br>
+![Configuring the remote peer on the second FMC](./assets/v22.png)
 
-![ACI](./assets/v27.png)<br>
+![IKE and IPsec settings on the second FMC](./assets/v23.png)
 
-![ACI](./assets/v28.png)<br>
-<br><br>
+![Completed VPN topology on the second FMC](./assets/v24.png)
 
+Test from the Kali PC at this site.
 
-Event View
+![Successful ping across the VPN from the second site](./assets/v25.png)
 
-![ACI](./assets/v29.png)<br>
+Verify the tunnel from the FTD CLI (`198.18.1.3`).
 
-![ACI](./assets/v30.png)
-<br><br>
+![show crypto ikev2 sa output on the second FTD](./assets/v26.png)
 
-Check STS VPN status through FMC
-![ACI](./assets/v31.png)
-<br><br>
+![show crypto ipsec sa output on the second FTD](./assets/v27.png)
 
+![show vpn-sessiondb output on the second FTD](./assets/v28.png)
 
-## Task 7
+Review the events.
 
-- This task tests the Secure Firewall file policy. 
-- Kali PC (198.18.6.6) trying to download block file from web server (198.18.2.11).
-- (For testing purpose, please host the web server on kali PC 198.18.2.11 using the Python web module shown bottom of this page. also make sure to download test jpg file from google to the 198.18.2.11 folder)
-<br>
+![VPN connection events](./assets/v29.png)
 
-![ACI](./assets/filepolicy.png)<br>
+![Event detail for the VPN traffic](./assets/v30.png)
 
-- Creating File Policy in Secure Firewall<br>
+Verify the tunnel from FMC.
 
-![ACI](./assets/v35.png)<br>
+![VPN status in the second FMC](./assets/v31.png)
 
-![ACI](./assets/v36.png)<br>
+**Expected result:** the tunnel is **Active** at both ends and both pings succeed.
 
-![ACI](./assets/v37.png)<br>
+---
 
+## Task 7 - Block a file download with a file policy
 
-- Hosting web server in Kali PC<br>
-![ACI](./assets/v38.png)<br>
+**Objective:** use a Secure Firewall file policy to block a file download, and confirm the block
+from both the web server logs and the firewall logs.
 
-- Client trying to download the file<br>
-![ACI](./assets/v39.png)<br>
+**Scenario:** the Kali PC at `198.18.6.6` tries to download a blocked file type from the web server
+at `198.18.2.11`.
 
-- Web server logs<br>
-![ACI](./assets/v40.png)<br>
+!!! note "Preparation"
+    Host a web server on the Kali PC at `198.18.2.11` using the Python web server module shown in
+    [Appendix B](#appendix-b-host-a-test-web-server-on-kali-linux), and place a test `.jpg` file in
+    the folder you serve from.
 
-- Secure Firewall logs<br>
-![ACI](./assets/v41.png)<br>
+![File policy test topology](./assets/filepolicy.png)
 
+**Steps**
 
-## Kali linux tcpdump
+1. Create the file policy in Secure Firewall.
 
-Specific traffic from to
+![Creating a new file policy](./assets/v35.png)
 
-![ACI](./assets/v32.png)
-<br><br>
+![Adding a file rule and selecting the file type](./assets/v36.png)
 
-any traffic between hosts
-![ACI](./assets/v33.png)
-<br><br>
+![File policy attached to the access control rule](./assets/v37.png)
 
+2. Start the web server on the Kali PC.
 
-## Host web server in kali linux
+![Python web server running on the Kali PC](./assets/v38.png)
 
-![ACI](./assets/v34.png)<br>
+3. From the client, try to download the file.
 
+![Client attempting the download and being blocked](./assets/v39.png)
+
+4. Check the web server logs.
+
+![Web server log showing the request](./assets/v40.png)
+
+5. Check the Secure Firewall logs.
+
+![File event in FMC showing the blocked download](./assets/v41.png)
+
+**Expected result:** the download fails on the client, the web server shows the request, and FMC
+records a file event showing the block.
+
+---
+
+## Appendix A - Capture traffic on Kali Linux with tcpdump
+
+Capture specific traffic between two hosts.
+
+![tcpdump filtered on source and destination](./assets/v32.png)
+
+Capture any traffic between two hosts.
+
+![tcpdump capturing all traffic between two hosts](./assets/v33.png)
+
+## Appendix B - Host a test web server on Kali Linux
+
+![Starting the Python HTTP server on Kali Linux](./assets/v34.png)
