@@ -23,7 +23,6 @@ rebuilds the HTML and republishes the site automatically.
 | `mkdocs.yml` | Site settings and navigation |
 | `.github/workflows/publish.yml` | Build + deploy to GitHub Pages |
 | `scripts/Paste-Image.ps1` | Save a clipboard screenshot into the right folder |
-| `old_repo_docs/` | Local copy of the previous repo (git-ignored, not published) |
 
 ## Editing a page
 

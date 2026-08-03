@@ -3,8 +3,6 @@ name: Publish docs
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "old_repo_docs/**"
   workflow_dispatch:
 
 permissions:

@@ -1,9 +1,6 @@
 # MkDocs build output
 site/
 
-# Local reference copy of the previous repository - not published
-old_repo_docs/
-
 # Python
 .venv/
 venv/
