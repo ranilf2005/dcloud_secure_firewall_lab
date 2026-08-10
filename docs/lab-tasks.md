@@ -58,7 +58,7 @@ Work from the endpoint outwards. Most failures in this lab are caused by one of 
 
 ---
 
-## Task 1 - Test connectivity from the LAN-B Kali PC
+## Task 1 - Test connectivity from the LAN-B Kali PC { .task-heading }
 
 **Objective:** establish a baseline. Find out exactly which of the five tests pass and which fail
 before you change anything.
@@ -103,7 +103,7 @@ Task 2 confirms.
 
 ---
 
-## Task 2 - Find out why the traffic is being dropped
+## Task 2 - Find out why the traffic is being dropped { .task-heading }
 
 **Objective:** prove where the packet is dropped and why. You will do this first from the FTD CLI,
 then repeat the same checks from the FMC GUI.
@@ -411,7 +411,7 @@ action and that no NAT rule exists for the inside network.
 
 ---
 
-## Task 3 - Allow traffic from inside `198.18.6.6` to outside `8.8.8.8`
+## Task 3 - Allow traffic from inside `198.18.6.6` to outside `8.8.8.8` { .task-heading }
 
 **Objective:** create the ACP and NAT rules that let LAN-B reach the outside network and the
 internet, then prove the change worked.
@@ -460,7 +460,7 @@ Re-run the tests from the LAN-B Kali PC.
 
 ---
 
-## Task 4 - Allow traffic from outside `198.18.2.x` to inside `198.18.6.x`
+## Task 4 - Allow traffic from outside `198.18.2.x` to inside `198.18.6.x` { .task-heading }
 
 **Objective:** allow the return direction. By default neither the Kali PC nor the Windows PC on the
 outside network can ping or connect to the `198.18.6.0/24` network.
@@ -496,7 +496,7 @@ outside network can ping or connect to the `198.18.6.0/24` network.
 
 ---
 
-## Task 5 - Create and test an IPS policy
+## Task 5 - Create and test an IPS policy { .task-heading }
 
 **Objective:** build an intrusion policy that blocks ICMP, attach it to an ACP rule, and confirm
 from the events that it is taking effect.
@@ -540,7 +540,7 @@ an intrusion event.
 
 ---
 
-## Task 6 - Build a site-to-site VPN between the two sites
+## Task 6 - Build a site-to-site VPN between the two sites { .task-heading }
 
 **Objective:** configure an IPsec site-to-site VPN so that `198.18.5.0/24` and `198.18.6.0/24` can
 reach each other. You must configure **both** ends before the tunnel comes up.
@@ -668,7 +668,7 @@ Verify the tunnel from FMC.
 
 ---
 
-## Task 7 - Block a file download with a file policy
+## Task 7 - Block a file download with a file policy { .task-heading }
 
 **Objective:** use a Secure Firewall file policy to block a file download, and confirm the block
 from both the web server logs and the firewall logs.

@@ -25,6 +25,25 @@
     --md-accent-fg-color: #00bdeb;
 }
 
+/* Blue headings - add { .blue-heading } after a heading in Markdown */
+.md-typeset .blue-heading {
+    color: #3a7fff;
+}
+
+/* Highlighted task headings - add { .task-heading } after a heading in Markdown */
+.md-typeset .task-heading {
+    background: rgba(58, 127, 255, .12);
+    border-left: .35rem solid #3a7fff;
+    border-radius: .2rem;
+    padding: .5rem .8rem;
+    margin-top: 2em;
+    scroll-margin-top: 4rem;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .task-heading {
+    background: rgba(58, 127, 255, .22);
+}
+
 /* Collapsible sections - see docs/javascripts/collapsible.js */
 .md-typeset .collapsible-heading {
     cursor: pointer;
