@@ -76,9 +76,39 @@
     display: none;
 }
 
+/* Expand all / Collapse all controls - injected by collapsible.js */
+.md-typeset .collapsible-controls {
+    display: flex;
+    gap: .4rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.md-typeset .collapsible-control {
+    background: transparent;
+    border: .05rem solid var(--md-default-fg-color--lighter);
+    border-radius: .2rem;
+    color: var(--md-default-fg-color--light);
+    cursor: pointer;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .3rem .8rem;
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+
+.md-typeset .collapsible-control:hover,
+.md-typeset .collapsible-control:focus-visible {
+    background: rgba(58, 127, 255, .12);
+    border-color: #3a7fff;
+    color: #3a7fff;
+}
+
 @media print {
     .md-typeset .collapsible-body[hidden] {
         display: block;
+    }
+
+    .md-typeset .collapsible-controls {
+        display: none;
     }
 }
 

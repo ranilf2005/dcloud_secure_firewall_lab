@@ -11,6 +11,7 @@
 
   function makeCollapsible(root) {
     var nodes = Array.prototype.slice.call(root.children);
+    var sections = [];
 
     nodes.forEach(function (heading, index) {
       if (!/^H[23]$/.test(heading.tagName) || heading.dataset[STATE_KEY]) {
@@ -62,7 +63,45 @@
           setState(heading, body, !body.hidden);
         }
       });
+
+      sections.push({ heading: heading, body: body });
     });
+
+    return sections;
+  }
+
+  function makeControls(sections) {
+    var bar = document.createElement("div");
+    bar.className = "collapsible-controls";
+    bar.setAttribute("role", "group");
+    bar.setAttribute("aria-label", "Section controls");
+
+    [["Expand all", false], ["Collapse all", true]].forEach(function (item) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "collapsible-control";
+      button.textContent = item[0];
+      button.addEventListener("click", function () {
+        sections.forEach(function (section) {
+          setState(section.heading, section.body, item[1]);
+        });
+      });
+      bar.appendChild(button);
+    });
+
+    return bar;
+  }
+
+  function addControls(root, sections) {
+    var title = root.querySelector("h1");
+
+    if (title && title.parentElement === root) {
+      title.after(makeControls(sections));
+    } else {
+      root.insertBefore(makeControls(sections), root.firstChild);
+    }
+
+    root.appendChild(makeControls(sections));
   }
 
   // A link or search hit may point inside a closed section, so open its ancestors.
@@ -95,7 +134,10 @@
   function init() {
     var root = document.querySelector("article.md-content__inner");
     if (root) {
-      makeCollapsible(root);
+      var sections = makeCollapsible(root);
+      if (sections.length) {
+        addControls(root, sections);
+      }
       revealTarget();
     }
   }
